@@ -79,6 +79,7 @@ def main():
     csv_file_path = 'fighters_to_be_tracked.csv'
 
     while True:
+        print("Running")
         # Get the fighters to be tracked from the CSV file
         fighters_to_be_tracked_dict = fighters_to_be_tracked(csv_file_path)
         # Scrape the current fighter odds from DraftKings
@@ -104,7 +105,7 @@ def main():
             # Update local csv file with new odds
             update_csv_with_new_odds(csv_file_path, fighters_to_be_tracked_dict)
 
-        time.sleep(3600)  # Wait for 3600 seconds (one hour) before scraping again
+        time.sleep(3600)  # Wait for 1800 seconds (half hour) before scraping again
 
 if __name__ == "__main__":
     main()
