@@ -50,8 +50,10 @@ def scrape_dk():
             href = a_tag.get('href')
             if href and '/event/' in href:
                 bout_id = href.split('/')[-1]
-                bout_ids.append(int(bout_id))
-
+                try:
+                    bout_ids.append(int(bout_id))
+                except:
+                    None
         # Make a list of the bout ids 
         fighter_bout_id = [bout_ids[i] for i in range(0, len(all_fighters_list), 2)]
 
