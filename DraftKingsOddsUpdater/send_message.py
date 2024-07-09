@@ -16,7 +16,7 @@ new_york_year = dt_us_central.strftime("%Y")
 # Define sender and recipient email addresses
 sender_email = "stevefights@gmail.com"
 recipient_email = "stevefights@gmail.com"
-app_password = "xcawvcdnntgwerde"  # Replace with your generated password
+app_password = ""  ############################################ Replace with your generated password
 
 def send_email(filename, body, subject):
     # Create message container
