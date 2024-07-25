@@ -5,13 +5,7 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
 from datetime import datetime
-import pytz
 
-# Define time variables
-dt_us_central = datetime.now(pytz.timezone('US/Eastern'))
-new_york_date = dt_us_central.strftime("%d")
-new_york_month = dt_us_central.strftime("%m")
-new_york_year = dt_us_central.strftime("%Y")
 
 # Define sender and recipient email addresses
 sender_email = "stevefights@gmail.com"
@@ -45,7 +39,8 @@ def send_email(filename, body, subject):
     text = msg.as_string()
     session.sendmail(sender_email, recipient_email, text)
     session.quit()
-    print('Mail Sent')
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'[{current_time}] Mail Sent')
 
 if __name__ == "__main__":
     send_email("test__data.csv", "body", "subject")

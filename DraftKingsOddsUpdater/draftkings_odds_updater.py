@@ -4,7 +4,7 @@ import pandas as pd
 import time
 from send_message import send_email_no_attachment
 import os
-
+from datetime import datetime
 
 def fighters_to_be_tracked(csv_file_path):
     # Read the CSV file into a DataFrame
@@ -19,32 +19,46 @@ def scrape_dk():
     # URL of the DraftKings UFC odds page
     url = "https://sportsbook.draftkings.com/leagues/mma/ufc"
 
-    # Fetch the HTML content from the URL
-    response = requests.get(url)
+    max_retries = 5
 
-    if response.status_code == 200:
-        # Store response content
-        html_content = response.content
+    retry_delay = 60  # delay in seconds before retrying
 
-        # Parse the HTML content using BeautifulSoup
-        soup = BeautifulSoup(html_content, 'html.parser')
+    for attempt in range(max_retries):
 
-        # Find the "root" id in the HTML content
-        root_id = soup.find(id="root")
+        try:
 
-        # Make list of all the fighter names found in the HTML content within the "root" id
-        all_fighters_list = [fighter.text.strip() for fighter in root_id.find_all("div", class_="event-cell__name-text")]
+            # Fetch the HTML content from the URL
+            response = requests.get(url)
 
-        # Make a list of all the fighter moneyline odds
-        all_fighters_odds_list = [fighter_odds.text.strip() for fighter_odds in root_id.find_all("span", class_="sportsbook-odds american no-margin default-color")]
+            if response.status_code == 200:
+                # Store response content
+                html_content = response.content
 
-        # Creating a dictionary
-        current_fighter_odds_dict = {k: v for k, v in zip(all_fighters_list, all_fighters_odds_list)}
+                # Parse the HTML content using BeautifulSoup
+                soup = BeautifulSoup(html_content, 'html.parser')
 
-        return current_fighter_odds_dict # Return the dictionary
-    else:
-        print(f"Failed to retrieve data: {response.status_code}")
-        return None # Return None if data retrieval fails
+                # Find the "root" id in the HTML content
+                root_id = soup.find(id="root")
+
+                # Make list of all the fighter names found in the HTML content within the "root" id
+                all_fighters_list = [fighter.text.strip() for fighter in root_id.find_all("div", class_="event-cell__name-text")]
+
+                # Make a list of all the fighter moneyline odds
+                all_fighters_odds_list = [fighter_odds.text.strip() for fighter_odds in root_id.find_all("span", class_="sportsbook-odds american no-margin default-color")]
+
+                # Creating a dictionary
+                current_fighter_odds_dict = {k: v for k, v in zip(all_fighters_list, all_fighters_odds_list)}
+
+                return current_fighter_odds_dict # Return the dictionary
+            else:
+                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{current_time}] Failed to retrieve data: {response.status_code}")
+                return None # Return None if data retrieval fails
+            
+        except requests.RequestException as e:
+                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{current_time}] Request failed: {e}. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
 
 def update_csv_with_new_odds(csv_file_path, updated_fighters_dict):
     # Read the existing CSV file
@@ -79,7 +93,8 @@ def main():
     csv_file_path = 'fighters_to_be_tracked.csv'
 
     while True:
-        print("Running")
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"[{current_time}] Running")
         # Get the fighters to be tracked from the CSV file
         fighters_to_be_tracked_dict = fighters_to_be_tracked(csv_file_path)
         # Scrape the current fighter odds from DraftKings
@@ -96,7 +111,8 @@ def main():
                 
                 # Check if the odds have changed by at least 10 points
                 if abs(odds_comparison_fix(current_odds, tracked_odds)) >= 10:
-                    print(f"Odds change detected for {fighter}: {fighters_to_be_tracked_dict[fighter]} -> {current_fighter_odds_dict[fighter]}")
+                    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    print(f"[{current_time}] Odds change detected for {fighter}: {fighters_to_be_tracked_dict[fighter]} -> {current_fighter_odds_dict[fighter]}")
                     # Send email update on new odds
                     send_email_no_attachment(f"The odds for {fighter} have changed from {fighters_to_be_tracked_dict[fighter]} to {current_fighter_odds_dict[fighter]}.", f"{fighter} odds updated")
                     # Update the dictionary with the new odds

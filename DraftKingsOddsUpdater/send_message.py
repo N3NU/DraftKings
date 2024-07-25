@@ -5,24 +5,20 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
 from datetime import datetime
-import pytz
 
-# Define time variables
-dt_us_central = datetime.now(pytz.timezone('US/Eastern'))
-new_york_date = dt_us_central.strftime("%d")
-new_york_month = dt_us_central.strftime("%m")
-new_york_year = dt_us_central.strftime("%Y")
+
 
 # Define sender and recipient email addresses
 sender_email = "stevefights@gmail.com"
-recipient_email = "stevefights@gmail.com"
+recipient_emails = "stevefights@gmail.com"
 app_password = ""  ############################################ Replace with your generated password
+
 
 def send_email(filename, body, subject):
     # Create message container
     msg = MIMEMultipart()
     msg['From'] = sender_email
-    msg['To'] = recipient_email
+    msg['To'] = recipient_emails
     msg['Subject'] = subject
 
     # Open the file in bynary mode
@@ -43,15 +39,16 @@ def send_email(filename, body, subject):
     session.starttls() # enable security
     session.login(sender_email, app_password)  # Use app-specific password instead of actual password
     text = msg.as_string()
-    session.sendmail(sender_email, recipient_email, text)
+    session.sendmail(sender_email, recipient_emails, text)
     session.quit()
-    print('Mail Sent')
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'[{current_time}] Mail Sent')
 
 def send_email_no_attachment(body, subject):
     # Create message container
     msg = MIMEMultipart()
     msg['From'] = sender_email
-    msg['To'] = recipient_email
+    msg['To'] = recipient_emails
     msg['Subject'] = subject
 
     # Add message body
@@ -62,9 +59,12 @@ def send_email_no_attachment(body, subject):
     session.starttls() # enable security
     session.login(sender_email, app_password)  # Use app-specific password instead of actual password
     text = msg.as_string()
-    session.sendmail(sender_email, recipient_email, text)
+    session.sendmail(sender_email, recipient_emails, text)
     session.quit()
-    print('Mail Sent')
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'[{current_time}] Mail Sent')
+
+
 
 if __name__ == "__main__":
     send_email("test__data.csv", "body", "subject")
