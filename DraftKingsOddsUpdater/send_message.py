@@ -11,7 +11,7 @@ from datetime import datetime
 # Define sender and recipient email addresses
 sender_email = "stevefights@gmail.com"
 recipient_emails = "stevefights@gmail.com"
-app_password = ""  ############################################ Replace with your generated password
+app_password = "ifslyxuysqjjnmdu"  ############################################ Replace with your generated password
 
 
 def send_email(filename, body, subject):

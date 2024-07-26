@@ -32,7 +32,26 @@ def scrape_dk():
                 root_id = soup.find(id="root")
 
                 # Make list of all the fighter names found in the HTML content within the "root" id
-                all_fighters_list = [fighter.text.strip() for fighter in root_id.find_all("div", class_="event-cell__name-text")]
+                all_fighters_list = []
+                # Make a list of all the fighter moneyline odds
+                all_fighters_odds_list = []
+                # Pull the bout id from the href found in the "a" element
+                bout_ids = []
+
+                # Looping through list of html elements that start with "tr"
+                for i in root_id.find_all("tr"):
+
+                    # Checking if fighter name and fighter odds exist. This must be done as the website occasionally omits odds and broke the old script because of that
+                    if "event-cell__name-text" in str(i) and "sportsbook-odds american no-margin default-color" in str(i):
+
+                        # Append fighter name to list
+                        all_fighters_list.append(i.find('div', class_='event-cell__name-text').text.strip())
+
+                        # Append fighter odds to list
+                        all_fighters_odds_list.append(i.find('span', class_='sportsbook-odds american no-margin default-color').text.strip())
+
+                        # Append fighter bout id to list
+                        bout_ids.append(int(i.find('a').get('href').split('/')[-1]))
                 
                 # Make a list of the first fighters in the bout using the list of all fighters
                 fighter_1 = [all_fighters_list[i] for i in range(0, len(all_fighters_list), 2)]
@@ -40,28 +59,12 @@ def scrape_dk():
                 # Make a list of the second fighters (opponents) in the bout using the list of all fighters
                 fighter_2 = [all_fighters_list[i + 1] for i in range(0, len(all_fighters_list), 2)]
 
-                # Make a list of all the fighter moneyline odds
-                all_fighters_odds_list = [fighter_odds.text.strip() for fighter_odds in root_id.find_all("span", class_="sportsbook-odds american no-margin default-color")]
-
                 # Make a list of the odds for the first fighters
                 fighter_1_odds = [all_fighters_odds_list[i] for i in range(0, len(all_fighters_list), 2)]
 
                 # Make a list of the odds for the second fighters (opponents)
                 fighter_2_odds = [all_fighters_odds_list[i + 1] for i in range(0, len(all_fighters_list), 2)]
 
-                # Get all the HTML elements with "a"
-                all_a_tags = root_id.find_all("a")
-
-                # Pull the bout id from the href found in the "a" element
-                bout_ids = []
-                for a_tag in all_a_tags:
-                    href = a_tag.get('href')
-                    if href and '/event/' in href:
-                        bout_id = href.split('/')[-1]
-                        try:
-                            bout_ids.append(int(bout_id))
-                        except:
-                            None
                 # Make a list of the bout ids 
                 fighter_bout_id = [bout_ids[i] for i in range(0, len(all_fighters_list), 2)]
 
@@ -138,7 +141,7 @@ def main():
                 # Send email update of new fight data (name of file, message body, and subject)
                 send_email(csv_filename, body, "Testing New UFC Fight Odds")
 
-        time.sleep(60)  # Wait for 60 seconds before scraping again
+        time.sleep(10)  # Wait for 60 seconds before scraping again
 
 if __name__ == "__main__":
     main()
